@@ -1,0 +1,494 @@
+.hero-visual {
+  right: 0 !important;
+  top: 0 !important;
+  width: min(50vw, 760px) !important;
+  height: 100% !important;
+  border: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  overflow: hidden !important;
+}
+
+:root {
+  --ink: #3b2718 !important;
+  --cream: #f4efe8 !important;
+  --paper: #fbf9f6 !important;
+  --gold: #d8a028 !important;
+  --brown: #5d4330 !important;
+  --muted: #8c6239 !important;
+  --bronze: #8c6239 !important;
+  --sage: #aab39d !important;
+}
+
+.hero {
+  min-height: 100svh !important;
+  padding: 0 !important;
+  display: block !important;
+  background: #151515 !important;
+}
+
+.hero:before {
+  display: none !important;
+}
+
+.hero:after {
+  display: none !important;
+}
+
+.hero > .hero-video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  filter: grayscale(1) brightness(0.64) contrast(1.08);
+}
+
+.hero-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.26),
+    transparent 45%,
+    rgba(0, 0, 0, 0.2)
+  );
+}
+
+.hero-brand {
+  position: absolute;
+  z-index: 3;
+  top: 7.5%;
+  left: 5.5%;
+}
+
+.hero-brand img {
+  width: 120px;
+  height: auto;
+}
+
+.hero-words {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4.5%;
+  color: #f8f5df;
+  font:
+    42px/0.94 Manrope,
+    sans-serif;
+  letter-spacing: -1.5px;
+}
+
+.hero-words p {
+  width: 27%;
+  margin: 0;
+}
+
+.hero-words p:nth-child(2) {
+  text-align: center;
+}
+
+.hero-words p:nth-child(3) {
+  text-align: right;
+}
+
+.hero-words strong {
+  font-weight: 500;
+}
+
+.hero-play {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: 52%;
+  width: 88px;
+  height: 88px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(248, 245, 223, 0.45);
+  border-radius: 50%;
+  color: #f8f5df;
+  background: rgba(0, 0, 0, 0.14);
+  backdrop-filter: blur(3px);
+  cursor: pointer;
+  font-size: 21px;
+}
+
+.hero-play span {
+  display: block;
+  transform: translateX(1px);
+}
+
+.hero-more {
+  position: absolute;
+  z-index: 4;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 11px 16px;
+  border: 1px solid rgba(248, 245, 223, 0.7);
+  color: #f8f5df;
+  font:
+    10px "DM Mono",
+    monospace;
+  letter-spacing: 1px;
+}
+
+.hero-more span {
+  margin-left: 8px;
+}
+
+.hero-progress {
+  position: absolute;
+  z-index: 4;
+  left: 5.5%;
+  right: 5.5%;
+  bottom: 5%;
+  height: 5px;
+  border-radius: 10px;
+  background: rgba(248, 245, 223, 0.28);
+}
+
+.hero-progress span {
+  display: block;
+  width: 37%;
+  height: 100%;
+  background: #f8f5df;
+  animation: progress 12s linear infinite;
+}
+
+.site-header {
+  z-index: 5;
+  padding: 0;
+  background: transparent !important;
+  color: #fbf9f6 !important;
+}
+
+.header-cta {
+  border-bottom-color: var(--gold) !important;
+}
+
+.main-nav a:hover,
+.header-cta:hover {
+  color: #d8a028 !important;
+  opacity: 1 !important;
+}
+
+.hero-more {
+  background: var(--gold);
+  border-color: var(--gold) !important;
+  color: #ffffff !important;
+}
+
+.hero-more:hover {
+  background: #b98511;
+}
+
+.section-label,
+.text-link {
+  color: var(--brown) !important;
+}
+
+.contact-link {
+  border-color: var(--gold) !important;
+  color: var(--gold);
+}
+
+.contact-link:hover {
+  background: var(--gold) !important;
+  color: #ffffff !important;
+}
+
+footer {
+  background: var(--paper) !important;
+  border-top-color: rgba(93, 67, 48, 0.2);
+}
+
+footer p,
+footer .socials {
+  color: var(--brown) !important;
+}
+
+.intro,
+.services,
+.portfolio,
+.testimonials {
+  background: var(--paper) !important;
+}
+
+.intro,
+.mission,
+.testimonials {
+  color: var(--ink);
+}
+
+.service-list {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.service-list article {
+  display: block !important;
+  min-height: 190px;
+  padding: 28px !important;
+  border: 1px solid rgba(108, 112, 44, 0.22) !important;
+  background: var(--cream);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease !important;
+}
+
+.service-list article:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 30px rgba(58, 61, 24, 0.1);
+}
+
+.service-list article > span,
+.service-list article > b {
+  display: block;
+  margin-bottom: 22px;
+}
+
+.service-list article > b {
+  float: right;
+  margin-top: -42px;
+}
+
+.mission {
+  background: var(--brown) !important;
+  color: var(--paper) !important;
+}
+
+.mission .section-label,
+.mission em {
+  color: var(--gold) !important;
+}
+
+.mission-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 14%;
+  align-items: end;
+  margin-top: 60px;
+}
+
+.mission-grid .lead {
+  color: rgba(255, 253, 244, 0.78);
+  max-width: 390px;
+}
+
+.testimonials h2 {
+  margin: 60px 0 45px;
+}
+
+.testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.testimonial-grid article {
+  padding: 30px;
+  background: var(--cream);
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+}
+
+.stars {
+  color: var(--gold);
+  letter-spacing: 4px;
+  margin-bottom: 25px;
+}
+
+.testimonial-grid p {
+  line-height: 1.7;
+  font-size: 14px;
+  flex: 1;
+}
+
+.testimonial-grid strong,
+.testimonial-grid small {
+  display: block;
+}
+
+.testimonial-grid strong {
+  font: 18px "DM Serif Display";
+  font-weight: 400;
+}
+
+.testimonial-grid small {
+  color: var(--muted);
+  font: 9px "DM Mono";
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 5px;
+}
+
+footer {
+  background: #f1ead8 !important;
+  color: var(--ink) !important;
+  border-top: 1px solid rgba(108, 112, 44, 0.18);
+}
+
+footer p,
+footer .socials {
+  color: var(--brown) !important;
+}
+
+.hero-video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  filter: saturate(0.72) contrast(1.04);
+}
+
+.hero-stamp {
+  display: none;
+}
+
+.js-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease;
+}
+
+.js-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.service-list article:nth-child(2),
+.project:nth-child(2) {
+  transition-delay: 0.1s;
+}
+
+.service-list article:nth-child(3),
+.project:nth-child(3) {
+  transition-delay: 0.2s;
+}
+
+.button,
+.contact-link {
+  transition:
+    transform 0.25s ease,
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+
+.button:hover,
+.contact-link:hover {
+  transform: translateY(-3px);
+}
+
+.project img {
+  transition:
+    transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1),
+    filter 0.8s ease !important;
+}
+
+.project:hover img {
+  transform: scale(1.06) !important;
+  filter: saturate(1.08);
+}
+
+@keyframes hero-drift {
+  from {
+    transform: scale(1.02);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .hero-visual {
+    right: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    height: 35% !important;
+    opacity: 0.7 !important;
+  }
+
+  .hero-brand {
+    top: 9%;
+    left: 7%;
+  }
+
+  .hero-brand img {
+    width: 100px;
+  }
+
+  .hero-words {
+    display: block;
+    padding: 0 7%;
+    font-size: 25px;
+    letter-spacing: -0.5px;
+  }
+
+  .hero-words p,
+  .hero-words p:nth-child(2),
+  .hero-words p:nth-child(3) {
+    width: 100%;
+    margin: 0 0 26px;
+    text-align: left;
+  }
+
+  .hero-words p:nth-child(2) {
+    text-align: center;
+  }
+
+  .hero-play {
+    width: 66px;
+    height: 66px;
+    top: 51%;
+  }
+
+  .hero-more {
+    bottom: 15%;
+  }
+
+  .service-list,
+  .testimonial-grid,
+  .mission-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mission-grid {
+    gap: 18px;
+    margin-top: 42px;
+  }
+
+  .testimonials h2 {
+    margin: 45px 0 30px;
+  }
+}
+
+@keyframes progress {
+  from {
+    width: 2%;
+  }
+  to {
+    width: 96%;
+  }
+}

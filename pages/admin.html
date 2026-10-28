@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/assets/brand/logo.png" />
+    <title>Administração | Fa & Gu Eventos</title>
+  </head>
+  <body class="inner-page page-auth">
+    <header class="site-header inner-header">
+      <a class="brand" href="/" aria-label="Fa & Gu Eventos - início"><img src="/assets/brand/logo.png" alt="Fa & Gu Eventos e Buffets" /></a>
+      <nav class="main-nav" aria-label="Navegação principal">
+        <a href="/pages/sobre-a-fa-e-gu.html">Sobre nós</a>
+        <a href="/pages/servicos-para-eventos.html">Serviços</a>
+        <a href="/pages/contato-e-orcamento.html">Contato</a>
+      </nav>
+      <a class="header-cta" href="/">Voltar ao início <span>↗</span></a>
+    </header>
+    <main class="auth-main">
+      <section class="auth-card admin-card" id="admin-page">
+        <p class="section-label">Painel administrativo</p>
+        <h1>Pedidos de orçamento.</h1>
+        <p class="auth-description">Acompanhe os pedidos recebidos e atualize o andamento de cada atendimento.</p>
+        <div id="admin-quote-list" class="admin-quote-list"></div>
+        <p id="admin-feedback" class="auth-feedback" role="status" aria-live="polite"></p>
+        <button class="auth-switch" type="button" id="admin-logout">Sair da conta</button>
+      </section>
+    </main>
+    <script type="module" src="/src/main.js?v=20261023-admin"></script>
+  </body>
+</html>

@@ -2,15 +2,21 @@
 
 ## Rodando localmente
 
-1. Copie `.env.example` para `.env` e troque `JWT_SECRET` e as credenciais administrativas.
+1. Copie `.env.example` para `.env` e preencha `JWT_SECRET`, `ADMIN_EMAIL` e `ADMIN_PASSWORD`.
 2. Execute `npm install`.
-3. Execute `npm run server`.
+3. Em um terminal, `npm start` (API em http://localhost:3000).
+4. Em outro terminal, `npm run dev` e abra http://localhost:5173 (o Vite repassa `/api` para a API).
 
-O banco local é criado automaticamente em `data/db.json` e não deve ser versionado.
+O banco SQLite é criado automaticamente em `data/site.db` (ou no caminho de `DATABASE_FILE`) e não deve ser versionado.
+Se `BACKUP_BUCKET` estiver configurado, o banco é copiado para o S3 a cada `BACKUP_INTERVAL_MINUTES` (quando houve mudança)
+e ao desligar, e é restaurado de lá automaticamente se o servidor subir sem o arquivo do banco.
+
+Deploy na AWS: veja [DEPLOY-AWS.md](DEPLOY-AWS.md).
 
 ## Autenticação
 
-As sessões são mantidas em um cookie `httpOnly` chamado `fa_gu_session`.
+As sessões são mantidas em um cookie `httpOnly` chamado `fa_gu_session`. Login e cadastro aceitam até 10 tentativas
+a cada 15 minutos por IP.
 
 - `POST /api/auth/register`: cria cliente. Body: `{ name, email, password }`.
 - `POST /api/auth/login`: inicia sessão. Body: `{ email, password }`.
@@ -19,9 +25,29 @@ As sessões são mantidas em um cookie `httpOnly` chamado `fa_gu_session`.
 
 ## Orçamentos
 
-- `POST /api/quotes`: recebe um pedido público. Body: `name`, `email`, `message` e, opcionalmente, `phone`, `eventType`, `eventDate`, `guests`, `menuPackage`, `menuItems` e `estimate`.
+- `POST /api/quotes`: recebe um pedido público (até 20 por hora por IP). Se houver sessão, o pedido fica ligado ao cliente.
+  Body: `name`, `email`, `message` e, opcionalmente, `phone`, `eventType`, `eventDate`, `guests`, `menuPackage`, `menuItems` e `estimate`.
 - `GET /api/my/quotes`: lista os pedidos associados ao cliente autenticado.
-- `GET /api/quotes`: lista todos os pedidos para administradores.
-- `PATCH /api/quotes/:id`: atualiza o status para `new`, `contacted`, `scheduled` ou `closed`.
+- `GET /api/quotes`: lista todos os pedidos (admin).
+- `PATCH /api/quotes/:id`: atualiza o status para `new`, `contacted`, `scheduled` ou `closed` (admin).
 
-O administrador inicial é criado na primeira inicialização quando `ADMIN_EMAIL` e `ADMIN_PASSWORD` existem no ambiente.
+## Administração
+
+- `GET /api/admin/users`: lista usuários com a quantidade de orçamentos de cada um.
+- `GET /api/admin/export/quotes.csv` e `GET /api/admin/export/users.csv`: planilhas (separador `;`, abrem direto no Excel).
+- `GET /api/admin/backup`: baixa uma cópia completa do banco (abre no DB Browser for SQLite). Contém hashes de senha.
+
+## Administradores
+
+O primeiro administrador é criado na inicialização quando `ADMIN_EMAIL` e `ADMIN_PASSWORD` (mínimo 12 caracteres) existem
+no ambiente e o e-mail ainda não está cadastrado. Um e-mail já cadastrado como cliente nunca é promovido automaticamente.
+
+Para os demais casos, use o script (no servidor da AWS, com `sudo`, dentro de `/var/app/current`):
+
+```
+node scripts/admin.js listar
+node scripts/admin.js criar <email> [nome]
+node scripts/admin.js promover <email>
+node scripts/admin.js remover-admin <email>
+node scripts/admin.js senha <email>
+```

@@ -2,6 +2,12 @@ import { defineConfig } from "vite";
 import { resolve } from "node:path";
 
 export default defineConfig({
+  // Em desenvolvimento, /api vai para o servidor Express (npm start), igual em produção.
+  server: {
+    proxy: {
+      "/api": "http://localhost:3000",
+    },
+  },
   build: {
     rollupOptions: {
       input: {

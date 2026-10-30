@@ -1,0 +1,21 @@
+node_modules/
+dist/
+
+# Banco de dados e dados de usuários: nunca versionar
+data/
+/db.json
+*.db
+*.db-shm
+*.db-wal
+
+# Segredos
+.env
+.env.*
+!.env.example
+
+# Elastic Beanstalk
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+*.zip
+deploy/

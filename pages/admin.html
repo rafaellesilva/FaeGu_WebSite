@@ -21,8 +21,33 @@
         <p class="section-label">Painel administrativo</p>
         <h1>Pedidos de orçamento.</h1>
         <p class="auth-description">Acompanhe os pedidos recebidos e atualize o andamento de cada atendimento.</p>
-        <div id="admin-quote-list" class="admin-quote-list"></div>
+        <div class="admin-toolbar">
+          <div class="admin-tabs" role="tablist">
+            <button type="button" role="tab" data-admin-tab aria-selected="true" aria-controls="admin-quotes-panel">Orçamentos <span id="admin-quote-count"></span></button>
+            <button type="button" role="tab" data-admin-tab aria-selected="false" aria-controls="admin-users-panel">Clientes <span id="admin-user-count"></span></button>
+          </div>
+          <div class="admin-actions">
+            <a data-admin-download="/api/admin/export/quotes.csv" download>Exportar orçamentos (CSV)</a>
+            <a data-admin-download="/api/admin/export/users.csv" download>Exportar clientes (CSV)</a>
+            <a data-admin-download="/api/admin/backup" download>Baixar banco completo</a>
+          </div>
+        </div>
         <p id="admin-feedback" class="auth-feedback" role="status" aria-live="polite"></p>
+        <div id="admin-quotes-panel" role="tabpanel">
+          <label class="admin-filter">Filtrar por status
+            <select id="admin-status-filter">
+              <option value="">Todos</option>
+              <option value="new">Novo</option>
+              <option value="contacted">Em contato</option>
+              <option value="scheduled">Agendado</option>
+              <option value="closed">Encerrado</option>
+            </select>
+          </label>
+          <div id="admin-quote-list" class="admin-quote-list"><p class="admin-empty">Carregando...</p></div>
+        </div>
+        <div id="admin-users-panel" role="tabpanel" hidden>
+          <div id="admin-user-list" class="admin-quote-list"><p class="admin-empty">Carregando...</p></div>
+        </div>
         <button class="auth-switch" type="button" id="admin-logout">Sair da conta</button>
       </section>
     </main>

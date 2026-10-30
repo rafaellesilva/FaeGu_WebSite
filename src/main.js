@@ -5,12 +5,11 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
-const configuredApiUrl = import.meta.env.VITE_API_URL;
-const apiBaseUrl =
-  configuredApiUrl ||
-  (window.location.hostname === "127.0.0.1"
-    ? "http://127.0.0.1:3000"
-    : "http://localhost:3000");
+// Vazio = mesma origem do site (produção, e em desenvolvimento via proxy do Vite).
+const apiBaseUrl = import.meta.env.VITE_API_URL || "";
+
+const statusLabels = { new: "Novo", contacted: "Em contato", scheduled: "Agendado", closed: "Encerrado" };
+const formatDate = (value) => (value ? new Date(value).toLocaleDateString("pt-BR") : "");
 
 const projects = [
   {
@@ -276,6 +275,7 @@ function setupBudgetSimulator() {
     try {
       const response = await fetch(`${apiBaseUrl}/api/quotes`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: data.get("name"),
@@ -338,7 +338,7 @@ async function setupAuth() {
       const eventType = document.createElement("strong");
       const status = document.createElement("span");
       eventType.textContent = quote.eventType || "Evento";
-      status.textContent = quote.status;
+      status.textContent = statusLabels[quote.status] || quote.status;
       item.append(eventType, status);
       quoteList.append(item);
     });
@@ -458,7 +458,7 @@ async function setupAccountPage() {
         const eventType = document.createElement("strong");
         const status = document.createElement("span");
         eventType.textContent = quote.eventType || "Evento";
-        status.textContent = quote.status;
+        status.textContent = statusLabels[quote.status] || quote.status;
         item.append(eventType, status);
         quoteList.append(item);
       });
@@ -474,12 +474,117 @@ async function setupAccountPage() {
   });
 }
 
+function createElement(tag, className, text) {
+  const element = document.createElement(tag);
+  if (className) element.className = className;
+  if (text !== undefined) element.textContent = text;
+  return element;
+}
+
+const formatMoney = (value) => Number(value).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+
+function renderAdminQuote(quote, feedback) {
+  const item = createElement("article", "admin-quote");
+  const head = createElement("div", "admin-quote-head");
+  const title = createElement("div");
+  title.append(createElement("strong", "", quote.name), createElement("span", "", `Recebido em ${formatDate(quote.createdAt)}`));
+
+  const status = createElement("select");
+  status.setAttribute("aria-label", `Status do pedido de ${quote.name}`);
+  Object.entries(statusLabels).forEach(([value, label]) => status.append(new Option(label, value, false, value === quote.status)));
+  status.addEventListener("change", async () => {
+    status.disabled = true;
+    const response = await fetch(`${apiBaseUrl}/api/quotes/${quote.id}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: status.value }),
+    }).catch(() => null);
+    if (!response?.ok) {
+      status.value = quote.status;
+      feedback.textContent = "Não foi possível atualizar o status.";
+      feedback.className = "auth-feedback is-error";
+    } else {
+      quote.status = status.value;
+      item.dataset.status = quote.status;
+      feedback.textContent = "Status atualizado.";
+      feedback.className = "auth-feedback is-success";
+    }
+    status.disabled = false;
+  });
+  head.append(title, status);
+
+  const details = createElement("dl", "admin-quote-details");
+  const email = createElement("a", "", quote.email);
+  email.href = `mailto:${quote.email}`;
+  [
+    ["E-mail", email],
+    ["Telefone", quote.phone],
+    ["Evento", quote.eventType],
+    ["Data do evento", quote.eventDate && formatDate(`${quote.eventDate}T12:00:00`)],
+    ["Convidados", quote.guests],
+    ["Pacote", quote.menuPackage],
+    ["Adicionais", quote.menuItems?.join(", ")],
+    ["Estimativa", quote.estimate && formatMoney(quote.estimate)],
+  ].forEach(([label, value]) => {
+    if (value === undefined || value === null || value === "") return;
+    const group = createElement("div");
+    const description = createElement("dd");
+    description.append(value);
+    group.append(createElement("dt", "", label), description);
+    details.append(group);
+  });
+
+  item.dataset.status = quote.status;
+  item.append(head, details, createElement("p", "admin-quote-message", quote.message));
+  return item;
+}
+
+function renderAdminUser(user) {
+  const item = createElement("article", "admin-user");
+  const info = createElement("div");
+  info.append(createElement("strong", "", user.name), createElement("span", "", user.email));
+  const meta = createElement("div", "admin-user-meta");
+  meta.append(
+    createElement("span", "", user.role === "admin" ? "Administrador" : "Cliente"),
+    createElement("span", "", `Desde ${formatDate(user.createdAt)}`),
+    createElement("span", "", `${user.quoteCount} ${user.quoteCount === 1 ? "orçamento" : "orçamentos"}`),
+  );
+  item.append(info, meta);
+  return item;
+}
+
 async function setupAdminPage() {
   const adminPage = document.querySelector("#admin-page");
   if (!adminPage) return;
 
   const quoteList = document.querySelector("#admin-quote-list");
+  const userList = document.querySelector("#admin-user-list");
+  const statusFilter = document.querySelector("#admin-status-filter");
   const feedback = document.querySelector("#admin-feedback");
+  const tabs = [...adminPage.querySelectorAll("[data-admin-tab]")];
+
+  document.querySelector("#admin-logout").addEventListener("click", async () => {
+    await fetch(`${apiBaseUrl}/api/auth/logout`, { method: "POST", credentials: "include" });
+    window.location.href = "/pages/acesso.html";
+  });
+  adminPage.querySelectorAll("[data-admin-download]").forEach((link) => {
+    link.href = `${apiBaseUrl}${link.dataset.adminDownload}`;
+  });
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((other) => {
+        const selected = other === tab;
+        other.setAttribute("aria-selected", String(selected));
+        document.getElementById(other.getAttribute("aria-controls")).hidden = !selected;
+      });
+    });
+  });
+  statusFilter.addEventListener("change", () => {
+    quoteList.querySelectorAll(".admin-quote").forEach((item) => {
+      item.hidden = Boolean(statusFilter.value) && item.dataset.status !== statusFilter.value;
+    });
+  });
 
   try {
     const sessionResponse = await fetch(`${apiBaseUrl}/api/auth/me`, { credentials: "include" });
@@ -493,55 +598,30 @@ async function setupAdminPage() {
       return;
     }
 
-    const quotesResponse = await fetch(`${apiBaseUrl}/api/quotes`, { credentials: "include" });
-    const result = await quotesResponse.json();
-    if (!quotesResponse.ok) throw new Error(result.error || "Não foi possível carregar os orçamentos.");
-    quoteList.replaceChildren();
-    if (!result.quotes.length) {
-      quoteList.innerHTML = '<p class="admin-empty">Nenhum orçamento recebido ainda.</p>';
-      return;
-    }
+    const [quotesResponse, usersResponse] = await Promise.all([
+      fetch(`${apiBaseUrl}/api/quotes`, { credentials: "include" }),
+      fetch(`${apiBaseUrl}/api/admin/users`, { credentials: "include" }),
+    ]);
+    const [quotesResult, usersResult] = await Promise.all([quotesResponse.json(), usersResponse.json()]);
+    if (!quotesResponse.ok) throw new Error(quotesResult.error || "Não foi possível carregar os orçamentos.");
+    if (!usersResponse.ok) throw new Error(usersResult.error || "Não foi possível carregar os clientes.");
 
-    result.quotes.forEach((quote) => {
-      const item = document.createElement("article");
-      item.className = "admin-quote";
-      item.innerHTML = `<div><strong>${quote.name}</strong><span>${quote.email}</span><span>${quote.eventType || "Evento"} · ${quote.eventDate || "Data não informada"}</span></div>`;
-      const status = document.createElement("select");
-      ["new", "contacted", "scheduled", "closed"].forEach((value) => {
-        const option = new Option(value, value, false, value === quote.status);
-        status.append(option);
-      });
-      status.addEventListener("change", async () => {
-        status.disabled = true;
-        const response = await fetch(`${apiBaseUrl}/api/quotes/${quote.id}`, {
-          method: "PATCH",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: status.value }),
-        });
-        if (!response.ok) {
-          status.value = quote.status;
-          feedback.textContent = "Não foi possível atualizar o status.";
-          feedback.className = "auth-feedback is-error";
-        } else {
-          quote.status = status.value;
-          feedback.textContent = "Status atualizado.";
-          feedback.className = "auth-feedback is-success";
-        }
-        status.disabled = false;
-      });
-      item.append(status);
-      quoteList.append(item);
-    });
+    document.querySelector("#admin-quote-count").textContent = quotesResult.quotes.length;
+    document.querySelector("#admin-user-count").textContent = usersResult.users.length;
+    quoteList.replaceChildren(
+      ...(quotesResult.quotes.length
+        ? quotesResult.quotes.map((quote) => renderAdminQuote(quote, feedback))
+        : [createElement("p", "admin-empty", "Nenhum orçamento recebido ainda.")]),
+    );
+    userList.replaceChildren(
+      ...(usersResult.users.length
+        ? usersResult.users.map(renderAdminUser)
+        : [createElement("p", "admin-empty", "Nenhum cliente cadastrado ainda.")]),
+    );
   } catch (error) {
     feedback.textContent = error.message;
     feedback.className = "auth-feedback is-error";
   }
-
-  document.querySelector("#admin-logout").addEventListener("click", async () => {
-    await fetch(`${apiBaseUrl}/api/auth/logout`, { method: "POST", credentials: "include" });
-    window.location.href = "/pages/acesso.html";
-  });
 }
 
 renderProjects();

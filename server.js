@@ -127,12 +127,6 @@ function requireAuth(request, response, next) {
   next();
 }
 
-// Para rotas públicas que também aceitam usuário logado (ex.: pedido de orçamento).
-function optionalAuth(request, _response, next) {
-  request.user = userFromSession(request);
-  next();
-}
-
 function requireAdmin(request, response, next) {
   if (request.user.role !== "admin") return response.status(403).json({ error: "Acesso restrito." });
   next();
@@ -222,11 +216,12 @@ app.post("/api/auth/logout", (_request, response) => {
 
 app.get("/api/auth/me", requireAuth, (request, response) => response.json({ user: publicUser(request.user) }));
 
-app.post("/api/quotes", quoteLimiter, optionalAuth, async (request, response, next) => {
+// Simulações só com cadastro; nome e e-mail caem para os da conta quando não vierem no body.
+app.post("/api/quotes", quoteLimiter, requireAuth, async (request, response, next) => {
   try {
     const { name, email, phone, eventType, eventDate, guests, menuPackage, menuItems, estimate, message } = request.body || {};
-    const normalizedName = typeof name === "string" ? name.trim() : "";
-    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+    const normalizedName = (typeof name === "string" && name.trim()) || request.user.name;
+    const normalizedEmail = ((typeof email === "string" && email.trim()) || request.user.email).toLowerCase();
     const normalizedMessage = typeof message === "string" ? message.trim() : "";
     if (!normalizedName || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail) || !normalizedMessage) {
       return response.status(400).json({ error: "Nome, e-mail e mensagem são obrigatórios." });
@@ -240,7 +235,7 @@ app.post("/api/quotes", quoteLimiter, optionalAuth, async (request, response, ne
     }
     const quote = {
       id: randomUUID(),
-      userId: request.user?.id || null,
+      userId: request.user.id,
       name: normalizedName,
       email: normalizedEmail,
       phone: String(phone || "").trim().slice(0, 40),

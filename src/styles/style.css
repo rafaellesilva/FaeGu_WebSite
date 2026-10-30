@@ -516,6 +516,18 @@ footer p,
   height: 20px;
   fill: currentColor;
 }
+.social-icon--google {
+  box-sizing: content-box;
+  width: 16px;
+  height: 16px;
+  padding: 4px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s ease;
+}
+.socials a:hover .social-icon--google {
+  transform: scale(1.1);
+}
 .reveal {
   animation: rise 0.8s both;
 }

@@ -25,8 +25,8 @@ a cada 15 minutos por IP.
 
 ## Orçamentos
 
-- `POST /api/quotes`: recebe um pedido público (até 20 por hora por IP). Se houver sessão, o pedido fica ligado ao cliente.
-  Body: `name`, `email`, `message` e, opcionalmente, `phone`, `eventType`, `eventDate`, `guests`, `menuPackage`, `menuItems` e `estimate`.
+- `POST /api/quotes`: recebe a simulação de um cliente autenticado (até 20 por hora por IP); sem sessão retorna `401`. O pedido fica ligado ao cliente.
+  Body: `message` e, opcionalmente, `name` e `email` (padrão: os da conta), `phone`, `eventType`, `eventDate`, `guests`, `menuPackage`, `menuItems` e `estimate`.
 - `GET /api/my/quotes`: lista os pedidos associados ao cliente autenticado.
 - `GET /api/quotes`: lista todos os pedidos (admin).
 - `PATCH /api/quotes/:id`: atualiza o status para `new`, `contacted`, `scheduled` ou `closed` (admin).

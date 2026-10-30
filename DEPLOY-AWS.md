@@ -82,7 +82,7 @@ Isso cria `deploy/fa-gu-<data>.zip`. É esse arquivo que vai para a AWS.
 
 1. Abra o endereço do ambiente (algo como `fa-gu-env.eba-xxxx.sa-east-1.elasticbeanstalk.com`).
 2. Abra `/api/health`: deve mostrar `{"status":"ok"}`.
-3. Envie uma simulação em **Serviços → Monte seu evento**.
+3. Crie uma conta em **/pages/acesso.html** e envie uma simulação em **Serviços → Monte seu evento** (só funciona com cadastro).
 4. Entre em **/pages/acesso.html** com o `ADMIN_EMAIL`: você cai no painel e vê o pedido.
 5. No S3, em `backups/`, deve aparecer `site-latest.db` em até 15 minutos.
 6. Funcionou? Apague `ADMIN_PASSWORD` das Environment properties (o admin já está no banco).

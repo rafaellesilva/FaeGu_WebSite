@@ -32,21 +32,43 @@ const projects = [
   },
 ];
 
+// Avaliações reais do Google (fotos recortadas do perfil de cada pessoa).
 const testimonials = [
   {
-    text: "A Fa & Gu entendeu exatamente o que imaginávamos. O dia foi leve, lindo e muito mais especial do que sonhamos.",
-    name: "Mariana & Lucas",
+    text: "Fiz a festa de 3 anos da minha filha com eles, ficou tudo lindo e gostoso os salgadinhos foi elogiado por todos que foram a festa, atendimento excelente a erika muito simpática atendeu a todos muito bem. Recomendo",
+    name: "Michele Figueiredo",
+    event: "Aniversário infantil",
+    avatar: "/assets/depoimentos/michele-figueiredo.png",
+  },
+  {
+    text: "Realizei o meu Casamento com Fa & Gu e foi tudo perfeito!!! A Erika além de ser uma excelente Cerimonialista tem uma equipe eficiente e que esbanja simpatia. Super recomendo a todos!",
+    name: "Evelyn Naiara",
     event: "Casamento",
+    avatar: "/assets/depoimentos/evelyn-naiara.png",
   },
   {
-    text: "Cada detalhe tinha a nossa cara. Foi uma festa inesquecível e nós conseguimos aproveitar tudo sem preocupação.",
-    name: "Juliana Alves",
-    event: "15 anos",
+    text: "Ótimo custo benefício, fartura e diversidade por um valor acessível. Além do atendimento personalizado e prestativo. Parabéns pelo serviço. OBS: Dica, peça o bolo de creme belga com pedaços de morango",
+    name: "Igor Fedel",
+    event: "Buffet",
+    avatar: "/assets/depoimentos/igor-fedel.png",
   },
   {
-    text: "Profissionalismo, criatividade e muito carinho em cada etapa. Nosso evento corporativo foi um sucesso.",
-    name: "Rafael Mendes",
-    event: "Evento corporativo",
+    text: "Realizei minha festinha com amigos e contratei os salgadinhos e o bolo salgado com a Erica. Tudo muito gostoso e a Érica foi muito prestativa. Parabéns pelo trabalho realizado!",
+    name: "Eliane dos Santos Andrade Justino",
+    event: "Festa entre amigos",
+    avatar: "/assets/depoimentos/eliane-justino.png",
+  },
+  {
+    text: "Realizei meu casamentos com o Buffet e superaram minhas expectativas, foi tudo maravilhoso além o que sonhei. Trabalho impecável.",
+    name: "Bruna Marques",
+    event: "Casamento",
+    avatar: "/assets/depoimentos/bruna-marques.png",
+  },
+  {
+    text: "Foi melhor q eu esperava, foi tudo maravilhoso 🤩🥰 eu amei cada detalhe lindo perfeito 😍",
+    name: "Eliane Oliveira",
+    event: "Casamento",
+    avatar: "/assets/depoimentos/eliane-oliveira.png",
   },
 ];
 
@@ -72,21 +94,49 @@ function renderProjects() {
 
 function renderTestimonials() {
   const testimonialGrid = document.querySelector(".testimonial-grid");
+  const testimonialCarousel = document.querySelector(".testimonial-carousel");
+  const testimonialDots = document.querySelector(".testimonial-dots");
 
-  if (!testimonialGrid) return;
+  if (testimonialGrid) {
+    testimonialGrid.innerHTML = testimonials
+      .map(
+        (testimonial) => `
+          <article>
+            <div class="stars" aria-label="5 estrelas">★★★★★</div>
+            <p>“${testimonial.text}”</p>
+            <div class="testimonial-author">
+              <img src="${testimonial.avatar}" alt="" loading="lazy" />
+              <div>
+                <strong>${testimonial.name}</strong>
+                <small>${testimonial.event} · Google</small>
+              </div>
+            </div>
+          </article>
+        `,
+      )
+      .join("");
+  }
 
-  testimonialGrid.innerHTML = testimonials
-    .map(
-      (testimonial) => `
-        <article>
-          <div class="stars" aria-label="5 estrelas">★★★★★</div>
-          <p>“${testimonial.text}”</p>
-          <strong>${testimonial.name}</strong>
-          <small>${testimonial.event}</small>
-        </article>
-      `,
-    )
-    .join("");
+  if (testimonialCarousel && testimonialDots) {
+    testimonialCarousel.innerHTML = testimonials
+      .map(
+        (testimonial, index) => `
+          <article class="testimonial-slide${index === 0 ? " is-active" : ""}">
+            <img class="testimonial-avatar" src="${testimonial.avatar}" alt="${testimonial.name}" loading="lazy" />
+            <div class="stars" aria-label="5 estrelas">★★★★★</div>
+            <blockquote>“${testimonial.text}”</blockquote>
+            <strong>${testimonial.name}</strong><span>${testimonial.event} · avaliação no Google</span>
+          </article>
+        `,
+      )
+      .join("");
+    testimonialDots.innerHTML = testimonials
+      .map(
+        (_, index) =>
+          `<button${index === 0 ? ' class="is-active"' : ""} aria-label="Ver depoimento ${index + 1}"></button>`,
+      )
+      .join("");
+  }
 }
 
 function setupHeroVideo() {
@@ -167,7 +217,7 @@ function setupInternalExperience() {
   document.querySelectorAll(".event-card__top").forEach((top) => {
     top.addEventListener("click", () => {
       const card = top.closest(".event-card");
-      document.querySelectorAll(".event-card.is-open").forEach((openCard) => {
+      card.parentElement.querySelectorAll(".event-card.is-open").forEach((openCard) => {
         if (openCard !== card) openCard.classList.remove("is-open");
       });
       card.classList.toggle("is-open");
@@ -237,36 +287,75 @@ function setupInternalExperience() {
   if (slides.length > 1) window.setInterval(() => showSlide(currentSlide + 1), 6500);
 }
 
-function setupBudgetSimulator() {
+function setupMenuTabs() {
+  const tabs = document.querySelectorAll("[data-menu-tab]");
+  const panels = document.querySelectorAll("[data-menu-panel]");
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((item) => {
+        const active = item === tab;
+        item.classList.toggle("is-active", active);
+        item.setAttribute("aria-selected", String(active));
+      });
+      panels.forEach((panel) => { panel.hidden = panel.dataset.menuPanel !== tab.dataset.menuTab; });
+    });
+  });
+}
+
+async function setupBudgetSimulator() {
   const form = document.querySelector("#budget-form");
   if (!form) return;
 
   const guestsInput = form.elements.namedItem("guests");
-  const totalOutput = document.querySelector("#budget-total");
+  const eventTypeInput = form.elements.namedItem("eventType");
+  const packageOutput = document.querySelector("#budget-package");
   const guestsOutput = document.querySelector("#budget-guests");
   const feedback = document.querySelector("#budget-feedback");
-  const formatCurrency = (value) => value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  const submit = document.querySelector("#budget-submit");
+  // Simulação só com cadastro: sem sessão, o envio leva ao login e depois volta para cá.
+  const loginUrl = `/pages/acesso.html?next=${encodeURIComponent("/pages/servicos-para-eventos.html#simulador")}`;
+  let loggedIn = false;
+  const requireLogin = () => {
+    loggedIn = false;
+    submit.firstChild.textContent = "Entrar para enviar ";
+    feedback.textContent = "Para enviar sua simulação, entre ou crie sua conta.";
+    feedback.className = "budget-feedback";
+  };
+  // Cada tipo de evento mostra só os seus cardápios e adicionais; "all" (evento especial) mostra todos.
+  const filterByEventType = () => {
+    const menu = eventTypeInput.selectedOptions[0]?.dataset.menu || "all";
+    form.querySelectorAll(".menu-option[data-menu]").forEach((option) => {
+      const visible = menu === "all" || option.dataset.menu === menu;
+      option.hidden = !visible;
+      if (!visible) option.querySelector("input").checked = false;
+    });
+    if (!form.querySelector('input[name="menuPackage"]:checked')) {
+      const firstVisible = form.querySelector('.menu-option:not([hidden]) input[name="menuPackage"]');
+      if (firstVisible) firstVisible.checked = true;
+    }
+  };
 
   const calculate = () => {
     const guests = Math.max(20, Number(guestsInput.value) || 20);
     const selectedPackage = form.querySelector('input[name="menuPackage"]:checked');
-    const packagePrice = Number(selectedPackage?.dataset.price || 0);
-    const addonsPrice = [...form.querySelectorAll('input[name="addons"]:checked')]
-      .reduce((total, addon) => total + Number(addon.dataset.price || 0), 0);
-    const total = guests * (packagePrice + addonsPrice);
     guestsOutput.textContent = guests;
-    totalOutput.textContent = formatCurrency(total);
+    packageOutput.textContent = selectedPackage?.value || "Escolha um cardápio";
     form.querySelectorAll(".menu-option").forEach((option) => {
       option.classList.toggle("is-selected", option.querySelector("input")?.checked);
     });
-    return { guests, selectedPackage, total };
+    return { guests, selectedPackage };
   };
 
+  eventTypeInput.addEventListener("change", filterByEventType);
   form.addEventListener("input", calculate);
   form.addEventListener("change", calculate);
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const { guests, selectedPackage, total } = calculate();
+    if (!loggedIn) {
+      window.location.href = loginUrl;
+      return;
+    }
+    const { guests, selectedPackage } = calculate();
     const data = new FormData(form);
     const addons = data.getAll("addons");
     feedback.textContent = "Enviando sua simulação...";
@@ -285,10 +374,13 @@ function setupBudgetSimulator() {
           guests,
           menuPackage: selectedPackage?.value,
           menuItems: addons,
-          estimate: total,
-          message: `Simulação: ${selectedPackage?.value}; adicionais: ${addons.join(", ") || "nenhum"}; estimativa: ${formatCurrency(total)}.`,
+          message: `Simulação: ${selectedPackage?.value}; adicionais: ${addons.join(", ") || "nenhum"}.`,
         }),
       });
+      if (response.status === 401) {
+        requireLogin();
+        return;
+      }
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Não foi possível enviar a simulação.");
       feedback.textContent = "Recebemos sua simulação. Em breve a gente entra em contato.";
@@ -299,7 +391,19 @@ function setupBudgetSimulator() {
     }
   });
 
+  filterByEventType();
   calculate();
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/auth/me`, { credentials: "include" });
+    if (!response.ok) return requireLogin();
+    const { user } = await response.json();
+    loggedIn = true;
+    if (!form.elements.name.value) form.elements.name.value = user.name;
+    if (!form.elements.email.value) form.elements.email.value = user.email;
+  } catch {
+    requireLogin();
+  }
 }
 
 async function setupAuth() {
@@ -315,6 +419,11 @@ async function setupAuth() {
   const accountName = document.querySelector("#account-name");
   const quoteList = document.querySelector("#quote-list");
   let registering = false;
+  // Volta para a página de origem (ex.: simulador) após o login; só aceita caminhos internos.
+  const next = new URLSearchParams(window.location.search).get("next");
+  const safeNext = next && /^\/(?![/\\])/.test(next) ? next : null;
+  const redirectAfterLogin = (user) =>
+    window.location.replace(user.role === "admin" ? "/pages/admin.html" : safeNext || "/pages/minha-conta.html");
 
   const showAccount = async (user) => {
     feedback.textContent = "";
@@ -348,7 +457,7 @@ async function setupAuth() {
     const response = await fetch(`${apiBaseUrl}/api/auth/me`, { credentials: "include" });
     if (response.ok) {
       const { user } = await response.json();
-      window.location.replace(user.role === "admin" ? "/pages/admin.html" : "/pages/minha-conta.html");
+      redirectAfterLogin(user);
       return;
     }
     else if (response.status !== 401) {
@@ -407,7 +516,7 @@ async function setupAuth() {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Não foi possível concluir o acesso.");
-      window.location.replace(result.user.role === "admin" ? "/pages/admin.html" : "/pages/minha-conta.html");
+      redirectAfterLogin(result.user);
     } catch (error) {
       feedback.textContent =
         error instanceof TypeError ? "Não foi possível conectar ao servidor. Tente novamente." : error.message;
@@ -630,6 +739,7 @@ setupHeroVideo();
 setupMenu();
 setupScrollAnimations();
 setupInternalExperience();
+setupMenuTabs();
 setupBudgetSimulator();
 setupAuth();
 setupAccountPage();

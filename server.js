@@ -222,9 +222,10 @@ app.post("/api/quotes", quoteLimiter, requireAuth, async (request, response, nex
     const { name, email, phone, eventType, eventDate, guests, menuPackage, menuItems, estimate, message } = request.body || {};
     const normalizedName = (typeof name === "string" && name.trim()) || request.user.name;
     const normalizedEmail = ((typeof email === "string" && email.trim()) || request.user.email).toLowerCase();
+    const normalizedPhone = typeof phone === "string" ? phone.trim() : "";
     const normalizedMessage = typeof message === "string" ? message.trim() : "";
-    if (!normalizedName || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail) || !normalizedMessage) {
-      return response.status(400).json({ error: "Nome, e-mail e mensagem são obrigatórios." });
+    if (!normalizedName || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail) || normalizedPhone.replace(/\D/g, "").length < 10 || !normalizedMessage) {
+      return response.status(400).json({ error: "Nome, e-mail, telefone e mensagem são obrigatórios." });
     }
     if (normalizedName.length > 120 || normalizedEmail.length > 254 || normalizedMessage.length > 4000) {
       return response.status(400).json({ error: "Confira os limites dos campos enviados." });
@@ -238,7 +239,7 @@ app.post("/api/quotes", quoteLimiter, requireAuth, async (request, response, nex
       userId: request.user.id,
       name: normalizedName,
       email: normalizedEmail,
-      phone: String(phone || "").trim().slice(0, 40),
+      phone: normalizedPhone.slice(0, 40),
       eventType: String(eventType || "").trim().slice(0, 80),
       eventDate: String(eventDate || "").trim().slice(0, 40),
       guests: parsedGuests || null,

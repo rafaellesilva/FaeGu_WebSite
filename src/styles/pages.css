@@ -69,6 +69,12 @@
   padding: 10px 0;
 }
 
+.inner-header .main-nav a[data-account-link] {
+  color: var(--gold);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .inner-header .main-nav a::after {
   content: "";
   position: absolute;
@@ -749,8 +755,7 @@
 .event-card.is-open .event-card__body { grid-template-rows: 1fr; padding-bottom: 30px; }
 .event-card__body p { max-width: 360px; margin: 0 0 22px; color: var(--brown); line-height: 1.7; }
 .event-card.is-open { min-height: 280px; }
-/* A foto fica em position: absolute para não esticar o card fechado (fotos verticais criavam vãos enormes). */
-.event-card__image { position: relative; overflow: hidden; grid-column: 2; grid-row: 1 / span 2; min-height: 0; opacity: 0; transform: translateX(20px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.event-card__image { position: relative; overflow: hidden; grid-column: 2; grid-row: 1 / span 2; min-height: 220px; opacity: 1; transform: none; transition: opacity 0.5s ease, transform 0.5s ease; }
 .event-card.is-open .event-card__image { opacity: 1; transform: none; }
 .event-card__image img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; filter: saturate(0.7); }
 
@@ -831,6 +836,11 @@
 .budget-summary b { color: var(--ink); font-weight: 600; }
 
 .menu-section { padding: 125px max(8vw, 32px); background: var(--cream); }
+.service-photo-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 48px; }
+.service-photo-strip figure { position: relative; height: 260px; margin: 0; overflow: hidden; background: var(--paper); }
+.service-photo-strip img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform 0.45s ease; }
+.service-photo-strip figure:hover img { transform: scale(1.035); }
+.service-photo-strip figcaption { position: absolute; right: 12px; bottom: 12px; left: 12px; padding: 8px 10px; background: rgba(47, 35, 24, 0.78); color: var(--paper); font: 11px "DM Mono", monospace; letter-spacing: 0.8px; text-transform: uppercase; }
 .menu-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 58px; }
 .menu-tabs button { border: 1px solid rgba(140, 98, 57, 0.35); border-radius: 999px; padding: 10px 18px; color: var(--brown); background: transparent; font: 11px "DM Mono", monospace; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; transition: background 0.25s ease, color 0.25s ease; }
 .menu-tabs button:hover,
@@ -860,7 +870,7 @@
 .budget-summary p { color: var(--brown); font: 11px "DM Mono", monospace; letter-spacing: 0.4px; }
 .budget-summary strong { color: var(--ink); font: 400 clamp(2.5rem, 5vw, 4.8rem) "DM Serif Display", serif; letter-spacing: -0.03em; }
 .budget-summary p { max-width: 290px; margin: 0; line-height: 1.6; text-align: right; }
-.budget-contact { grid-template-columns: 1fr 1fr auto; align-items: end; margin-top: 32px; }
+.budget-contact { grid-template-columns: 1fr 1fr 1fr auto; align-items: end; margin-top: 32px; }
 .budget-contact .page-button { min-height: 48px; border: 0; cursor: pointer; white-space: nowrap; }
 .budget-feedback { min-height: 22px; margin: 20px 0 0; color: var(--brown); font-size: 0.85rem; }
 .budget-feedback.is-success { color: #4e704e; }
@@ -891,7 +901,7 @@
   .timeline article::before { left: 7px; }
   .event-card { grid-template-columns: 1fr; }
   .event-card.is-open { min-height: 0; }
-  .event-card__image { grid-column: 1; grid-row: auto; height: 0; }
+  .event-card__image { grid-column: 1; grid-row: auto; height: 220px; }
   .event-card.is-open .event-card__image { height: 220px; }
   .event-card__top,
   .event-card__body { grid-column: 1; }
@@ -900,6 +910,8 @@
   .menu-addons--compact { grid-template-columns: 1fr 1fr; }
   .menu-grid,
   .menu-grid--two { grid-template-columns: 1fr; }
+  .service-photo-strip { grid-template-columns: repeat(2, 1fr); }
+  .service-photo-strip figure { height: 220px; }
   .menu-section { padding: 90px 16px; }
   .menu-card { padding: 24px 20px; }
   .budget-fields,

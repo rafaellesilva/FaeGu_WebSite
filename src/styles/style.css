@@ -59,6 +59,11 @@ a {
   text-transform: uppercase;
   letter-spacing: 1.1px;
 }
+.main-nav a[data-account-link] {
+  color: var(--gold);
+  font-weight: 600;
+  white-space: nowrap;
+}
 .main-nav a,
 .header-cta {
   transition: opacity 0.25s;

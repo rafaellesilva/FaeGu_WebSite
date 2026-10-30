@@ -358,6 +358,13 @@ async function setupBudgetSimulator() {
     const { guests, selectedPackage } = calculate();
     const data = new FormData(form);
     const addons = data.getAll("addons");
+    const phone = String(data.get("phone") || "").trim();
+    if (phone.replace(/\D/g, "").length < 10) {
+      feedback.textContent = "Informe um telefone válido com DDD.";
+      feedback.className = "budget-feedback is-error";
+      form.elements.phone.focus();
+      return;
+    }
     feedback.textContent = "Enviando sua simulação...";
     feedback.className = "budget-feedback";
 
@@ -369,6 +376,7 @@ async function setupBudgetSimulator() {
         body: JSON.stringify({
           name: data.get("name"),
           email: data.get("email"),
+          phone,
           eventType: data.get("eventType"),
           eventDate: data.get("eventDate"),
           guests,
@@ -403,6 +411,37 @@ async function setupBudgetSimulator() {
     if (!form.elements.email.value) form.elements.email.value = user.email;
   } catch {
     requireLogin();
+  }
+}
+
+async function setupSessionNavigation() {
+  const navigation = document.querySelector(".main-nav");
+  if (!navigation) return;
+
+  let accountLink = navigation.querySelector("[data-account-link]");
+  if (!accountLink) {
+    const existingAccessLink = Array.from(navigation.querySelectorAll("a")).find((link) =>
+      link.getAttribute("href")?.includes("/pages/acesso.html"),
+    );
+    accountLink = existingAccessLink || document.createElement("a");
+    accountLink.dataset.accountLink = "";
+    if (!existingAccessLink) navigation.append(accountLink);
+  }
+
+  accountLink.href = "/pages/acesso.html";
+  accountLink.textContent = "Acesso";
+  accountLink.removeAttribute("title");
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/auth/me`, { credentials: "include" });
+    if (!response.ok) return;
+    const { user } = await response.json();
+    const firstName = user.name?.trim().split(/\s+/)[0] || "Minha conta";
+    accountLink.href = user.role === "admin" ? "/pages/admin.html" : "/pages/minha-conta.html";
+    accountLink.textContent = `Olá, ${firstName}`;
+    accountLink.title = "Abrir minha conta";
+  } catch {
+    // Mantém o link de acesso quando a API não estiver disponível.
   }
 }
 
@@ -741,6 +780,7 @@ setupScrollAnimations();
 setupInternalExperience();
 setupMenuTabs();
 setupBudgetSimulator();
+setupSessionNavigation();
 setupAuth();
 setupAccountPage();
 setupAdminPage();

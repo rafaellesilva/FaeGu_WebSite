@@ -15,8 +15,9 @@ Deploy na AWS: veja [DEPLOY-AWS.md](DEPLOY-AWS.md).
 
 ## Autenticação
 
-As sessões são mantidas em um cookie `httpOnly` chamado `fa_gu_session`. Login e cadastro aceitam até 10 tentativas
-a cada 15 minutos por IP.
+As sessões são mantidas em um cookie de sessão `httpOnly` chamado `fa_gu_session`, descartado quando o navegador é fechado
+(o token expira em 7 dias de qualquer forma). O site também encerra a sessão na primeira página de cada aba nova, então
+fechar a aba e abrir o site de novo pede login. Login e cadastro aceitam até 10 tentativas a cada 15 minutos por IP.
 
 - `POST /api/auth/register`: cria cliente. Body: `{ name, email, password }`.
 - `POST /api/auth/login`: inicia sessão. Body: `{ email, password }`.
@@ -34,7 +35,10 @@ a cada 15 minutos por IP.
 ## Administração
 
 - `GET /api/admin/users`: lista usuários com a quantidade de orçamentos de cada um.
+- `DELETE /api/admin/users/:id`: exclui a conta de um cliente (administradores não podem ser excluídos por aqui).
+  Os orçamentos dele continuam no banco, só deixam de estar ligados a uma conta (`userId` fica vazio).
 - `GET /api/admin/export/quotes.csv` e `GET /api/admin/export/users.csv`: planilhas (separador `;`, abrem direto no Excel).
+- `GET /api/admin/export/quotes/:id.csv`: o mesmo formato da exportação de orçamentos, só com um pedido.
 - `GET /api/admin/backup`: baixa uma cópia completa do banco (abre no DB Browser for SQLite). Contém hashes de senha.
 
 ## Administradores

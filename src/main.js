@@ -8,28 +8,28 @@ gsap.registerPlugin(ScrollTrigger);
 // Vazio = mesma origem do site (produção, e em desenvolvimento via proxy do Vite).
 const apiBaseUrl = import.meta.env.VITE_API_URL || "";
 
-const statusLabels = { new: "Novo", contacted: "Em contato", scheduled: "Agendado", closed: "Encerrado" };
+// A sessão vale só enquanto a aba estiver aberta: a primeira página de uma aba nova encerra o login anterior.
+const sessionReady = (() => {
+  try {
+    if (sessionStorage.getItem("fa_gu_tab")) return Promise.resolve();
+    sessionStorage.setItem("fa_gu_tab", "1");
+  } catch {
+    return Promise.resolve();
+  }
+  return fetch(`${apiBaseUrl}/api/auth/logout`, { method: "POST", credentials: "include" }).catch(() => {});
+})();
+const fetchSession = async () => {
+  await sessionReady;
+  return fetch(`${apiBaseUrl}/api/auth/me`, { credentials: "include" });
+};
+
+const statusLabels ={ new: "Novo", contacted: "Em contato", scheduled: "Agendado", closed: "Encerrado" };
 const formatDate = (value) => (value ? new Date(value).toLocaleDateString("pt-BR") : "");
 
 const projects = [
-  {
-    type: "Casamento",
-    title: "Um sim para sempre",
-    image:
-      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&q=85",
-  },
-  {
-    type: "15 anos",
-    title: "Uma noite para lembrar",
-    image:
-      "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&q=85",
-  },
-  {
-    type: "Corporativo",
-    title: "Ideias que conectam",
-    image:
-      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=85",
-  },
+  { type: "Casamento", title: "Um sim para sempre" },
+  { type: "15 anos", title: "Uma noite para lembrar" },
+  { type: "Corporativo", title: "Ideias que conectam" },
 ];
 
 // Avaliações reais do Google (fotos recortadas do perfil de cada pessoa).
@@ -81,7 +81,7 @@ function renderProjects() {
     .map(
       (project, index) => `
         <article class="project project-${index + 1}">
-          <img src="${project.image}" alt="${project.title}" />
+          <span class="project-number">${String(index + 1).padStart(2, "0")}</span>
           <div class="project-caption">
             <p>${project.type}</p>
             <h3>${project.title}</h3>
@@ -224,6 +224,9 @@ function setupInternalExperience() {
     });
   });
 
+  document.querySelectorAll("[data-years-since]").forEach((element) => {
+    element.dataset.count = new Date().getFullYear() - Number(element.dataset.yearsSince);
+  });
   const counters = document.querySelectorAll("[data-count]");
   counters.forEach((counter) => {
     const target = Number(counter.dataset.count);
@@ -403,7 +406,7 @@ async function setupBudgetSimulator() {
   calculate();
 
   try {
-    const response = await fetch(`${apiBaseUrl}/api/auth/me`, { credentials: "include" });
+    const response = await fetchSession();
     if (!response.ok) return requireLogin();
     const { user } = await response.json();
     loggedIn = true;
@@ -433,7 +436,7 @@ async function setupSessionNavigation() {
   accountLink.removeAttribute("title");
 
   try {
-    const response = await fetch(`${apiBaseUrl}/api/auth/me`, { credentials: "include" });
+    const response = await fetchSession();
     if (!response.ok) return;
     const { user } = await response.json();
     const firstName = user.name?.trim().split(/\s+/)[0] || "Minha conta";
@@ -493,7 +496,7 @@ async function setupAuth() {
   };
 
   try {
-    const response = await fetch(`${apiBaseUrl}/api/auth/me`, { credentials: "include" });
+    const response = await fetchSession();
     if (response.ok) {
       const { user } = await response.json();
       redirectAfterLogin(user);
@@ -579,7 +582,7 @@ async function setupAccountPage() {
   const feedback = document.querySelector("#account-page-feedback");
 
   try {
-    const sessionResponse = await fetch(`${apiBaseUrl}/api/auth/me`, { credentials: "include" });
+    const sessionResponse = await fetchSession();
     if (!sessionResponse.ok) {
       window.location.replace("/pages/acesso.html");
       return;
@@ -660,7 +663,12 @@ function renderAdminQuote(quote, feedback) {
     }
     status.disabled = false;
   });
-  head.append(title, status);
+  const exportLink = createElement("a", "admin-quote-export", "Exportar (CSV)");
+  exportLink.href = `${apiBaseUrl}/api/admin/export/quotes/${encodeURIComponent(quote.id)}.csv`;
+  exportLink.download = "";
+  const controls = createElement("div", "admin-quote-controls");
+  controls.append(status, exportLink);
+  head.append(title, controls);
 
   const details = createElement("dl", "admin-quote-details");
   const email = createElement("a", "", quote.email);
@@ -688,7 +696,7 @@ function renderAdminQuote(quote, feedback) {
   return item;
 }
 
-function renderAdminUser(user) {
+function renderAdminUser(user, feedback, onDelete) {
   const item = createElement("article", "admin-user");
   const info = createElement("div");
   info.append(createElement("strong", "", user.name), createElement("span", "", user.email));
@@ -698,6 +706,33 @@ function renderAdminUser(user) {
     createElement("span", "", `Desde ${formatDate(user.createdAt)}`),
     createElement("span", "", `${user.quoteCount} ${user.quoteCount === 1 ? "orçamento" : "orçamentos"}`),
   );
+  if (user.role === "client") {
+    const remove = createElement("button", "admin-user-delete", "Excluir");
+    remove.type = "button";
+    remove.setAttribute("aria-label", `Excluir a conta de ${user.name}`);
+    remove.addEventListener("click", async () => {
+      const confirmed = window.confirm(
+        `Excluir a conta de ${user.name} (${user.email})?\n\nOs orçamentos enviados por esse cliente continuam no sistema. Essa ação não pode ser desfeita.`,
+      );
+      if (!confirmed) return;
+      remove.disabled = true;
+      const response = await fetch(`${apiBaseUrl}/api/admin/users/${encodeURIComponent(user.id)}`, {
+        method: "DELETE",
+        credentials: "include",
+      }).catch(() => null);
+      if (!response?.ok) {
+        remove.disabled = false;
+        feedback.textContent = "Não foi possível excluir o cliente.";
+        feedback.className = "auth-feedback is-error";
+        return;
+      }
+      item.remove();
+      onDelete();
+      feedback.textContent = `Conta de ${user.name} excluída.`;
+      feedback.className = "auth-feedback is-success";
+    });
+    meta.append(remove);
+  }
   item.append(info, meta);
   return item;
 }
@@ -735,7 +770,7 @@ async function setupAdminPage() {
   });
 
   try {
-    const sessionResponse = await fetch(`${apiBaseUrl}/api/auth/me`, { credentials: "include" });
+    const sessionResponse = await fetchSession();
     if (!sessionResponse.ok) {
       window.location.replace("/pages/acesso.html");
       return;
@@ -755,7 +790,12 @@ async function setupAdminPage() {
     if (!usersResponse.ok) throw new Error(usersResult.error || "Não foi possível carregar os clientes.");
 
     document.querySelector("#admin-quote-count").textContent = quotesResult.quotes.length;
-    document.querySelector("#admin-user-count").textContent = usersResult.users.length;
+    const userCount = document.querySelector("#admin-user-count");
+    userCount.textContent = usersResult.users.length;
+    const onUserDeleted = () => {
+      userCount.textContent = Number(userCount.textContent) - 1;
+      if (!userList.querySelector(".admin-user")) userList.append(createElement("p", "admin-empty", "Nenhum cliente cadastrado ainda."));
+    };
     quoteList.replaceChildren(
       ...(quotesResult.quotes.length
         ? quotesResult.quotes.map((quote) => renderAdminQuote(quote, feedback))
@@ -763,7 +803,7 @@ async function setupAdminPage() {
     );
     userList.replaceChildren(
       ...(usersResult.users.length
-        ? usersResult.users.map(renderAdminUser)
+        ? usersResult.users.map((user) => renderAdminUser(user, feedback, onUserDeleted))
         : [createElement("p", "admin-empty", "Nenhum cliente cadastrado ainda.")]),
     );
   } catch (error) {

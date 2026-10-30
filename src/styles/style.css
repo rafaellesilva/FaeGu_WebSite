@@ -373,52 +373,57 @@ em {
   font-size: clamp(55px, 7vw, 95px);
   margin: 75px 0 45px;
 }
+/* Cards só com texto: número, tipo de evento e título, separados por linhas finas. */
 .project-grid {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  grid-template-rows: 280px 280px;
-  gap: 18px;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid rgba(59, 39, 24, 0.2);
 }
 .project {
-  overflow: hidden;
   position: relative;
-  color: white;
-  background: #555;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 72px;
+  min-height: 260px;
+  padding: 34px 32px 40px;
+  color: var(--ink);
+  border-right: 1px solid rgba(59, 39, 24, 0.12);
 }
-.project-1 {
-  grid-row: span 2;
+.project:first-child {
+  padding-left: 0;
 }
-.project img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.7s;
+.project:last-child {
+  padding-right: 0;
+  border-right: 0;
 }
-.project:hover img {
-  transform: scale(1.04);
-}
-.project:after {
+.project::before {
   content: "";
   position: absolute;
-  inset: 35% 0 0;
-  background: linear-gradient(transparent, rgba(43, 24, 13, 0.62));
+  top: -1px;
+  left: 0;
+  width: 48px;
+  height: 2px;
+  background: var(--gold);
+  transition: width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
-.project-caption {
-  position: absolute;
-  z-index: 1;
-  bottom: 25px;
-  left: 25px;
+.project:hover::before {
+  width: 100%;
+}
+.project-number {
+  color: var(--gold);
+  font: 400 clamp(3.2rem, 5vw, 4.6rem) / 1 "DM Serif Display", serif;
 }
 .project-caption p {
-  color: #ead7a8;
-  font: 9px "DM Mono";
+  margin: 0;
+  color: var(--brown);
+  font: 10px "DM Mono", monospace;
   text-transform: uppercase;
   letter-spacing: 1.5px;
 }
 .project-caption h3 {
-  font: 28px "DM Serif Display";
-  font-weight: 400;
-  margin: 5px 0 0;
+  margin: 10px 0 0;
+  font: 400 clamp(1.9rem, 2.6vw, 2.6rem) / 1.1 "DM Serif Display", serif;
 }
 .quote-section {
   padding: 150px 20px;
@@ -635,14 +640,16 @@ footer p,
     margin: 55px 0 30px;
   }
   .project-grid {
-    display: flex;
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
-  .project {
-    height: 300px;
-  }
-  .project-1 {
-    height: 410px;
+  .project,
+  .project:first-child,
+  .project:last-child {
+    min-height: 0;
+    gap: 32px;
+    padding: 30px 0 34px;
+    border-right: 0;
+    border-bottom: 1px solid rgba(59, 39, 24, 0.12);
   }
   .quote-section {
     padding: 100px 25px;

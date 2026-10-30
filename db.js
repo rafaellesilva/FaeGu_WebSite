@@ -89,6 +89,7 @@ export const queries = {
     GROUP BY users.id ORDER BY users.createdAt DESC`),
   updateUserRole: db.prepare("UPDATE users SET role = ? WHERE id = ?"),
   updateUserPassword: db.prepare("UPDATE users SET passwordHash = ? WHERE id = ?"),
+  deleteUser: db.prepare("DELETE FROM users WHERE id = ?"),
   allQuotes: db.prepare("SELECT * FROM quotes ORDER BY createdAt DESC"),
   quotesByUser: db.prepare("SELECT * FROM quotes WHERE userId = ? ORDER BY createdAt DESC"),
   quoteById: db.prepare("SELECT * FROM quotes WHERE id = ?"),

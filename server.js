@@ -51,7 +51,7 @@ app.use((request, response, next) => {
   }
   response.header("Access-Control-Allow-Credentials", "true");
   response.header("Access-Control-Allow-Headers", "Content-Type");
-  response.header("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS");
+  response.header("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
   if (request.method === "OPTIONS") return response.sendStatus(204);
   next();
 });
@@ -106,8 +106,9 @@ function issueToken(user) {
 
 const cookieOptions = { httpOnly: true, sameSite: "lax", secure: secureCookies };
 
+// Cookie de sessão (sem maxAge): o navegador o descarta ao ser fechado. O token continua expirando em 7 dias.
 function setAuthCookie(response, user) {
-  response.cookie("fa_gu_session", issueToken(user), { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
+  response.cookie("fa_gu_session", issueToken(user), cookieOptions);
 }
 
 function userFromSession(request) {
@@ -160,6 +161,13 @@ function toCsv(columns, rows) {
   ];
   return `﻿${lines.join("\r\n")}`;
 }
+
+const quoteColumns = [
+  ["createdAt", "Recebido em"], ["status", "Status"], ["name", "Nome"], ["email", "E-mail"], ["phone", "Telefone"],
+  ["eventType", "Tipo de evento"], ["eventDate", "Data do evento"], ["guests", "Convidados"], ["menuPackage", "Pacote"],
+  ["menuItems", "Adicionais"], ["estimate", "Estimativa (R$)"], ["message", "Mensagem"], ["userId", "ID do cliente"], ["id", "ID"],
+];
+const quoteCsvRow = (row) => ({ ...rowToQuote(row), menuItems: JSON.parse(row.menuItems).join(", ") });
 
 function sendCsv(response, name, csv) {
   const date = new Date().toISOString().slice(0, 10);
@@ -299,13 +307,31 @@ app.get("/api/admin/users", requireAuth, requireAdmin, (_request, response, next
 
 app.get("/api/admin/export/quotes.csv", requireAuth, requireAdmin, (_request, response, next) => {
   try {
-    const rows = queries.allQuotes.all().map((row) => ({ ...rowToQuote(row), menuItems: JSON.parse(row.menuItems).join(", ") }));
-    const columns = [
-      ["createdAt", "Recebido em"], ["status", "Status"], ["name", "Nome"], ["email", "E-mail"], ["phone", "Telefone"],
-      ["eventType", "Tipo de evento"], ["eventDate", "Data do evento"], ["guests", "Convidados"], ["menuPackage", "Pacote"],
-      ["menuItems", "Adicionais"], ["estimate", "Estimativa (R$)"], ["message", "Mensagem"], ["userId", "ID do cliente"], ["id", "ID"],
-    ];
-    sendCsv(response, "orcamentos", toCsv(columns, rows));
+    sendCsv(response, "orcamentos", toCsv(quoteColumns, queries.allQuotes.all().map(quoteCsvRow)));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/admin/export/quotes/:id.csv", requireAuth, requireAdmin, (request, response, next) => {
+  try {
+    const row = queries.quoteById.get(request.params.id);
+    if (!row) return response.status(404).json({ error: "Orçamento não encontrado." });
+    const slug = row.name.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || row.id.slice(0, 8);
+    sendCsv(response, `orcamento-${slug}`, toCsv(quoteColumns, [quoteCsvRow(row)]));
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Só contas de clientes. Os orçamentos ficam no banco: a chave estrangeira apenas desfaz o vínculo (userId vira NULL).
+app.delete("/api/admin/users/:id", requireAuth, requireAdmin, (request, response, next) => {
+  try {
+    const user = queries.userById.get(request.params.id);
+    if (!user) return response.status(404).json({ error: "Cliente não encontrado." });
+    if (user.role !== "client") return response.status(400).json({ error: "Apenas contas de clientes podem ser excluídas." });
+    queries.deleteUser.run(user.id);
+    return response.status(204).end();
   } catch (error) {
     next(error);
   }

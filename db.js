@@ -92,6 +92,7 @@ export const queries = {
   deleteUser: db.prepare("DELETE FROM users WHERE id = ?"),
   allQuotes: db.prepare("SELECT * FROM quotes ORDER BY createdAt DESC"),
   quotesByUser: db.prepare("SELECT * FROM quotes WHERE userId = ? ORDER BY createdAt DESC"),
+  latestQuoteByUser: db.prepare("SELECT * FROM quotes WHERE userId = ? ORDER BY createdAt DESC LIMIT 1"),
   quoteById: db.prepare("SELECT * FROM quotes WHERE id = ?"),
   updateQuoteStatus: db.prepare("UPDATE quotes SET status = ?, updatedAt = ? WHERE id = ?"),
 };

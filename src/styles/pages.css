@@ -435,7 +435,7 @@
   }
 
   .inner-page footer {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 26px;
     min-height: 220px;
     padding: 42px 24px 34px;
@@ -801,7 +801,7 @@
 body:has(.viewer[open]) { overflow: hidden; }
 
 /* Bastidores: o vídeo (vertical, formato reels) num quadro de celular, ao lado do texto. */
-.backstage-section { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 60px 8vw; padding: 120px max(8vw, 32px); background: var(--ink); color: var(--paper); }
+.backstage-section { overflow-x: clip; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 60px 8vw; padding: 120px max(8vw, 32px); background: var(--ink); color: var(--paper); }
 .backstage-section .section-label { color: #ead28a !important; }
 .backstage-copy h2 { max-width: 600px; margin: 24px 0; font-size: clamp(3rem, 5.5vw, 5.8rem); line-height: 0.95; letter-spacing: -0.045em; }
 .backstage-copy h2 em { color: var(--gold); }

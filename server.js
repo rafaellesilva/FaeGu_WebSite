@@ -225,6 +225,22 @@ app.post("/api/auth/logout", (_request, response) => {
 
 app.get("/api/auth/me", requireAuth, (request, response) => response.json({ user: publicUser(request.user) }));
 
+// Data do evento: AAAA-MM-DD que exista no calendário, de hoje (horário de Brasília) até 5 anos à frente.
+const isoDay = (date) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(date);
+const isValidEventDate = (value) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) return false;
+  const today = isoDay(new Date());
+  const limit = `${Number(today.slice(0, 4)) + 5}${today.slice(4)}`;
+  return value >= today && value <= limit;
+};
+
+const duplicateWindowMs = 60_000;
+const sameQuote = (a, b) =>
+  ["name", "email", "phone", "eventType", "eventDate", "guests", "menuPackage", "message"].every((key) => a[key] === b[key]) &&
+  JSON.stringify(a.menuItems) === JSON.stringify(b.menuItems);
+
 // Simulações só com cadastro; nome e e-mail caem para os da conta quando não vierem no body.
 app.post("/api/quotes", quoteLimiter, requireAuth, async (request, response, next) => {
   try {
@@ -239,6 +255,10 @@ app.post("/api/quotes", quoteLimiter, requireAuth, async (request, response, nex
     if (normalizedName.length > 120 || normalizedEmail.length > 254 || normalizedMessage.length > 4000) {
       return response.status(400).json({ error: "Confira os limites dos campos enviados." });
     }
+    const normalizedDate = typeof eventDate === "string" ? eventDate.trim() : "";
+    if (!isValidEventDate(normalizedDate)) {
+      return response.status(400).json({ error: "Informe uma data de evento válida, a partir de hoje." });
+    }
     const parsedGuests = Number(guests);
     if (guests !== undefined && guests !== null && (!Number.isInteger(parsedGuests) || parsedGuests < 1 || parsedGuests > 10000)) {
       return response.status(400).json({ error: "Quantidade de convidados inválida." });
@@ -250,7 +270,7 @@ app.post("/api/quotes", quoteLimiter, requireAuth, async (request, response, nex
       email: normalizedEmail,
       phone: normalizedPhone.slice(0, 40),
       eventType: String(eventType || "").trim().slice(0, 80),
-      eventDate: String(eventDate || "").trim().slice(0, 40),
+      eventDate: normalizedDate,
       guests: parsedGuests || null,
       menuPackage: String(menuPackage || "").trim().slice(0, 80),
       menuItems: Array.isArray(menuItems) ? menuItems.slice(0, 50).map((item) => String(item).trim().slice(0, 80)).filter(Boolean) : [],
@@ -259,6 +279,11 @@ app.post("/api/quotes", quoteLimiter, requireAuth, async (request, response, nex
       status: "new",
       createdAt: new Date().toISOString(),
     };
+    // Mesmo pedido repetido em poucos segundos (duplo clique, reenvio): devolve o que já existe, sem gravar nem mandar e-mail de novo.
+    const latest = queries.latestQuoteByUser.get(request.user.id);
+    if (latest && Date.now() - Date.parse(latest.createdAt) < duplicateWindowMs && sameQuote(rowToQuote(latest), quote)) {
+      return response.status(200).json({ quote: rowToQuote(latest) });
+    }
     queries.insertQuote.run(quoteParams(quote));
     // Em segundo plano: o cliente não espera o envio, e uma falha de e-mail não desfaz o pedido.
     // O agradecimento vai para o e-mail da conta, para o formulário não servir para mandar e-mail a terceiros.

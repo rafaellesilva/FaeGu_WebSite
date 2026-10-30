@@ -8,15 +8,36 @@ gsap.registerPlugin(ScrollTrigger);
 // Vazio = mesma origem do site (produção, e em desenvolvimento via proxy do Vite).
 const apiBaseUrl = import.meta.env.VITE_API_URL || "";
 
-// A sessão vale só enquanto a aba estiver aberta: a primeira página de uma aba nova encerra o login anterior.
-const sessionReady = (() => {
+// Abas abertas do site respondem a um "ping"; assim uma aba nova sabe se o navegador continuava aberto.
+const tabChannel = "BroadcastChannel" in window ? new BroadcastChannel("fa_gu_tabs") : null;
+tabChannel?.addEventListener("message", (event) => {
+  if (event.data === "ping") tabChannel.postMessage("pong");
+});
+const anotherTabOpen = () =>
+  new Promise((resolve) => {
+    if (!tabChannel) return resolve(false);
+    const finish = (found) => {
+      clearTimeout(timer);
+      tabChannel.removeEventListener("message", onMessage);
+      resolve(found);
+    };
+    const onMessage = (event) => event.data === "pong" && finish(true);
+    const timer = setTimeout(() => finish(false), 400);
+    tabChannel.addEventListener("message", onMessage);
+    tabChannel.postMessage("ping");
+  });
+
+// Login pedido de novo ao reabrir o navegador: a primeira página de uma aba nova encerra a sessão
+// restaurada, a não ser que outra aba do site ainda esteja aberta (aí é só uma aba a mais).
+const sessionReady = (async () => {
   try {
-    if (sessionStorage.getItem("fa_gu_tab")) return Promise.resolve();
+    if (sessionStorage.getItem("fa_gu_tab")) return;
     sessionStorage.setItem("fa_gu_tab", "1");
   } catch {
-    return Promise.resolve();
+    return;
   }
-  return fetch(`${apiBaseUrl}/api/auth/logout`, { method: "POST", credentials: "include" }).catch(() => {});
+  if (await anotherTabOpen()) return;
+  await fetch(`${apiBaseUrl}/api/auth/logout`, { method: "POST", credentials: "include" }).catch(() => {});
 })();
 const fetchSession = async () => {
   await sessionReady;
@@ -400,7 +421,18 @@ async function setupBudgetSimulator() {
   const submit = document.querySelector("#budget-submit");
   // Simulação só com cadastro: sem sessão, o envio leva ao login e depois volta para cá.
   const loginUrl = `/pages/acesso.html?next=${encodeURIComponent("/pages/servicos-para-eventos.html#simulador")}`;
+  const dateInput = form.elements.namedItem("eventDate");
+  // Data mínima = hoje, no fuso do navegador (o servidor confere de novo no horário de Brasília).
+  const today = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  };
+  dateInput.min = today();
+  // A validação roda no envio, depois de checar o login: sem conta, o botão leva direto ao acesso,
+  // em vez de o navegador barrar com "preencha a data".
+  form.noValidate = true;
   let loggedIn = false;
+  let sending = false;
   const requireLogin = () => {
     loggedIn = false;
     submit.firstChild.textContent = "Entrar para enviar ";
@@ -435,12 +467,32 @@ async function setupBudgetSimulator() {
   eventTypeInput.addEventListener("change", filterByEventType);
   form.addEventListener("input", calculate);
   form.addEventListener("change", calculate);
+  // Trava o envio já no primeiro clique: um duplo clique não pode criar dois orçamentos (nem dois e-mails).
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (sending) return;
+    sending = true;
+    submit.disabled = true;
+    try {
+      await sendSimulation();
+    } finally {
+      sending = false;
+      submit.disabled = false;
+    }
+  });
+
+  const sendSimulation = async () => {
+    await sessionCheck;
     if (!loggedIn) {
       window.location.href = loginUrl;
       return;
     }
+    if (dateInput.value && dateInput.value < today()) {
+      dateInput.setCustomValidity("Escolha uma data a partir de hoje.");
+    } else {
+      dateInput.setCustomValidity("");
+    }
+    if (!form.reportValidity()) return;
     const { guests, selectedPackage } = calculate();
     const data = new FormData(form);
     const addons = data.getAll("addons");
@@ -483,21 +535,25 @@ async function setupBudgetSimulator() {
       feedback.textContent = "Não foi possível enviar agora. Tente novamente ou fale conosco pelo WhatsApp.";
       feedback.classList.add("is-error");
     }
-  });
+  };
 
+  dateInput.addEventListener("input", () => dateInput.setCustomValidity(""));
   filterByEventType();
   calculate();
 
-  try {
-    const response = await fetchSession();
-    if (!response.ok) return requireLogin();
-    const { user } = await response.json();
-    loggedIn = true;
-    if (!form.elements.name.value) form.elements.name.value = user.name;
-    if (!form.elements.email.value) form.elements.email.value = user.email;
-  } catch {
-    requireLogin();
-  }
+  const sessionCheck = (async () => {
+    try {
+      const response = await fetchSession();
+      if (!response.ok) return requireLogin();
+      const { user } = await response.json();
+      loggedIn = true;
+      if (!form.elements.name.value) form.elements.name.value = user.name;
+      if (!form.elements.email.value) form.elements.email.value = user.email;
+    } catch {
+      requireLogin();
+    }
+  })();
+  await sessionCheck;
 }
 
 async function setupSessionNavigation() {

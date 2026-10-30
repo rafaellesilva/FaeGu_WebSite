@@ -27,7 +27,8 @@ fechar a aba e abrir o site de novo pede login. Login e cadastro aceitam até 10
 ## Orçamentos
 
 - `POST /api/quotes`: recebe a simulação de um cliente autenticado (até 20 por hora por IP); sem sessão retorna `401`. O pedido fica ligado ao cliente.
-  Body: `message` e, opcionalmente, `name` e `email` (padrão: os da conta), `phone`, `eventType`, `eventDate`, `guests`, `menuPackage`, `menuItems` e `estimate`.
+  Body: `message`, `phone` e `eventDate` (`AAAA-MM-DD`, data real, de hoje até 5 anos à frente) e, opcionalmente, `name` e `email` (padrão: os da conta), `eventType`, `guests`, `menuPackage`, `menuItems` e `estimate`.
+  O mesmo pedido repetido pelo mesmo cliente em até 60 segundos não é gravado de novo: retorna `200` com o orçamento já existente, sem reenviar e-mails.
   Depois de salvar, envia em segundo plano um aviso para `ADMIN_NOTIFY_EMAIL` e um agradecimento para o e-mail da conta
   (só com o SMTP configurado; veja [DEPLOY-AWS.md](DEPLOY-AWS.md#e-mails-de-orçamento-gmail)).
 - `GET /api/my/quotes`: lista os pedidos associados ao cliente autenticado.

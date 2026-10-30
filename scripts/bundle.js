@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
-const files = ["dist", "scripts", ".ebextensions", "Procfile", "package.json", "package-lock.json", "server.js", "db.js", "backup.js"];
+const files = ["dist", "scripts", ".ebextensions", "Procfile", "package.json", "package-lock.json", "server.js", "db.js", "backup.js", "mailer.js"];
 const missing = files.filter((file) => !existsSync(file));
 if (missing.length) {
   console.error(`Arquivos faltando: ${missing.join(", ")}. Rode "npm run bundle" na pasta do projeto.`);

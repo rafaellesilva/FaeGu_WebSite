@@ -11,9 +11,11 @@
     "preview": "vite preview",
     "admin": "node scripts/admin.js",
     "deploy": "vite build && eb deploy",
-    "bundle": "vite build && node scripts/bundle.js"
+    "bundle": "vite build && node scripts/bundle.js",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "vite": "^8.3.0"
   },
   "dependencies": {
@@ -24,7 +26,8 @@
     "express": "^5.1.0",
     "express-rate-limit": "^8.7.1",
     "gsap": "^3.15.0",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "10.1.4"
   },
   "engines": {
     "node": ">=22.13"

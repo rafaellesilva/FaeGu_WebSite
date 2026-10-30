@@ -19,3 +19,8 @@ data/
 !.elasticbeanstalk/*.global.yml
 *.zip
 deploy/
+
+# Testes E2E (gerados a cada execução)
+tests/e2e/.tmp/
+tests/e2e/results/
+tests/e2e/report/

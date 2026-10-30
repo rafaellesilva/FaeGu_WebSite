@@ -9,16 +9,17 @@
   <body class="inner-page page-auth">
     <!-- site-header:voltar -->
     <main class="auth-main">
-      <section class="auth-card" id="account-page">
+      <section class="auth-card account-card" id="account-page">
         <p class="section-label">Área do cliente</p>
         <h1>Olá, <span id="account-page-name">cliente</span>.</h1>
         <p class="auth-description">Acompanhe aqui os pedidos de orçamento enviados para a Fa & Gu.</p>
-        <h2>Meus orçamentos</h2>
+        <h2 class="quote-list-title">Meus orçamentos</h2>
         <ul id="account-page-quotes" class="quote-list"></ul>
         <p id="account-page-feedback" class="auth-feedback" role="status" aria-live="polite"></p>
-        <a class="page-button" href="/pages/servicos-para-eventos.html">Criar uma nova simulação <span>↗</span></a>
-        <br />
-        <button class="auth-switch" type="button" id="account-page-logout">Sair da conta</button>
+        <div class="account-actions">
+          <a class="page-button" href="/pages/servicos-para-eventos.html">Criar uma nova simulação <span>↗</span></a>
+          <button class="auth-switch" type="button" id="account-page-logout">Sair da conta</button>
+        </div>
       </section>
     </main>
     <script type="module" src="/src/main.js?v=20261013-auth"></script>

@@ -25,35 +25,30 @@
         <p>Uma coleção de encontros, gestos e detalhes que ganharam forma, ritmo e memória.</p>
       </div>
     </section>
-    <section class="gallery-section reveal-section">
-      <div class="gallery-head">
+    <section class="mosaic-section reveal-section" aria-label="Galeria de eventos">
+      <div class="mosaic-head">
         <div>
           <div class="section-label">Galeria de experiências</div>
           <h2>Histórias que <em>ganharam forma.</em></h2>
         </div>
-        <div class="gallery-filters" role="group" aria-label="Filtrar galeria"><button class="is-active"
-            data-filter="all">Todos</button><button data-filter="wedding">Casamentos</button><button
-            data-filter="corporate">Corporativos</button><button data-filter="celebration">Celebrações</button><button
-            data-filter="fifteen">15 anos</button></div>
+        <p>Casamentos, festas, 15 anos, mesas e sabores: momentos reais, do jeito que aconteceram. Clique em uma foto
+          para ver em tela cheia.</p>
       </div>
-      <div class="masonry-grid"><button class="gallery-item gallery-item--wide" data-category="celebration"
-          data-lightbox="/assets/WhatsApp%20Image%202026-09-25%20at%2013.44.11.jpeg"><img
-        src="/assets/WhatsApp%20Image%202026-09-25%20at%2013.44.11.jpeg" alt="Decoração de celebração" loading="lazy" /><span>Celebrações / presença</span></button><button
-          class="gallery-item" data-category="fifteen"
-          data-lightbox="/assets/WhatsApp%20Image%202026-09-25%20at%2013.44.08.jpeg"><img
-            src="/assets/WhatsApp%20Image%202026-09-25%20at%2013.44.08.jpeg" alt="Decoração de festa de 15 anos" loading="lazy" /><span>15 anos / conexão</span></button><button
-          class="gallery-item" data-category="celebration"
-          data-lightbox="/assets/WhatsApp%20Image%202026-09-25%20at%2013.44.07.jpeg"><img
-            src="/assets/WhatsApp%20Image%202026-09-25%20at%2013.44.07.jpeg" alt="Celebração produzida pela Fa & Gu" loading="lazy" /><span>Celebrações / ritmo</span></button><button
-          class="gallery-item" data-category="celebration"
-          data-lightbox="/assets/WhatsApp%20Image%202026-09-25%20at%2013.44.06.jpeg"><img
-            src="/assets/WhatsApp%20Image%202026-09-25%20at%2013.44.06.jpeg" alt="Detalhe de celebração" loading="lazy" /><span>Celebrações / detalhe</span></button><button
-          class="gallery-item gallery-item--tall" data-category="celebration"
-          data-lightbox="/assets/WhatsApp%20Image%202026-09-25%20at%2013.39.36.jpeg"><img
-            src="/assets/WhatsApp%20Image%202026-09-25%20at%2013.39.36.jpeg" alt="Ambientação de celebração" loading="lazy" /><span>Celebrações / atmosfera</span></button><button
-          class="gallery-item" data-category="celebration"
-          data-lightbox="/assets/WhatsApp%20Image%202026-09-25%20at%2013.39.35.jpeg"><img
-            src="/assets/WhatsApp%20Image%202026-09-25%20at%2013.39.35.jpeg" alt="Mesa preparada para celebração" loading="lazy" /><span>Celebrações / detalhe</span></button></div>
+      <!-- Fotos renderizadas a partir da lista portfolioPhotos em src/main.js -->
+      <div class="mosaic" data-portfolio-grid></div>
+    </section>
+    <section class="backstage-section reveal-section">
+      <div class="backstage-copy">
+        <div class="section-label">Nos bastidores</div>
+        <h2>Cada detalhe, <em>em movimento.</em></h2>
+        <p>Por trás de cada mesa posta e de cada abraço, tem uma equipe cuidando de tudo para que você só precise viver
+          o momento.</p>
+        <a class="text-link" href="/pages/contato-e-orcamento.html">Vamos conversar <span>↗</span></a>
+      </div>
+      <div class="backstage-frame">
+        <video class="backstage-video" src="/assets/portfolio/video-01.mp4" muted loop playsinline preload="metadata"
+          aria-label="Vídeo dos bastidores de um evento da Fa & Gu"></video>
+      </div>
     </section>
     <section class="experience-section reveal-section">
       <div class="experience-copy">
@@ -62,8 +57,8 @@
         <p>Uma mesa, um abraço, uma pausa antes do sim. Criamos camadas para que cada pessoa encontre seu próprio
           momento dentro do evento.</p>
       </div>
-        <div class="experience-image"><img src="/assets/WhatsApp%20Image%202026-09-25%20at%2013.44.06.jpeg"
-          alt="Detalhe de mesa preparada para uma celebração" loading="lazy" /></div>
+        <div class="experience-image"><img src="/assets/portfolio/foto-04.jpg"
+          alt="Noivos no jardim com o véu ao vento" loading="lazy" /></div>
     </section>
     <section class="quote-section reveal-section">
       <div class="quote-mark">“</div>
@@ -78,8 +73,14 @@
           aria-label="Depoimento anterior">←</button><span class="testimonial-dots"></span><button class="testimonial-next"
           aria-label="Próximo depoimento">→</button></div>
     </section>
-    <div class="lightbox" aria-hidden="true"><button class="lightbox-close" aria-label="Fechar imagem">×</button><img
-        src="" alt="" /></div>
+    <dialog class="viewer" data-portfolio-viewer aria-label="Foto ampliada" autofocus>
+      <img class="viewer-image" alt="" />
+      <span class="viewer-count" aria-hidden="true"></span>
+      <span class="viewer-tag"></span>
+      <button type="button" class="viewer-close" aria-label="Fechar">×</button>
+      <button type="button" class="viewer-prev" aria-label="Foto anterior">←</button>
+      <button type="button" class="viewer-next" aria-label="Próxima foto">→</button>
+    </dialog>
   </main>
   <footer><a class="brand" href="/"><img src="/assets/brand/logo.png" alt="Fa & Gu Eventos e Buffets" /></a>
     <div class="footer-info"><p>Celebrando histórias desde 2010</p><p class="location">Jacareí-SP</p></div>

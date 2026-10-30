@@ -10,6 +10,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { db, queries, quoteParams, rowToQuote } from "./db.js";
 import { backupToS3, backupsEnabled, snapshot } from "./backup.js";
+import { mailEnabled, sendQuoteEmails } from "./mailer.js";
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -259,6 +260,9 @@ app.post("/api/quotes", quoteLimiter, requireAuth, async (request, response, nex
       createdAt: new Date().toISOString(),
     };
     queries.insertQuote.run(quoteParams(quote));
+    // Em segundo plano: o cliente não espera o envio, e uma falha de e-mail não desfaz o pedido.
+    // O agradecimento vai para o e-mail da conta, para o formulário não servir para mandar e-mail a terceiros.
+    sendQuoteEmails(quote, request.user.email).catch((error) => console.error("Falha ao preparar e-mails de orçamento.", error));
     return response.status(201).json({ quote });
   } catch (error) {
     next(error);
@@ -384,6 +388,7 @@ async function runBackup(reason) {
 ensureAdminUser()
   .then(() => {
     const server = app.listen(port, () => console.log(`Fa & Gu API disponível em http://localhost:${port}`));
+    if (!mailEnabled) console.warn("SMTP não configurado: os e-mails de orçamento NÃO estão sendo enviados.");
     if (!backupsEnabled) {
       if (isProduction) console.warn("BACKUP_BUCKET não configurado: o banco NÃO está sendo copiado para o S3.");
       return;
